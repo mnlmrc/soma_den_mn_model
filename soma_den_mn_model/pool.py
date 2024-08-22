@@ -1,5 +1,5 @@
 from soma_den_mn_model.configs import Config
-from typing import Optional 
+from typing import Optional, List, Dict
 from scipy import signal
 import brian2.numpy_ as np
 from brian2 import *
@@ -99,7 +99,10 @@ class MNPool(Config):
         # self.syn_exc_flag = np.zeros(self.N, dtype=bool)
         # self.syn_inh_flag = np.zeros(self.N, dtype=bool)
 
-    def _get_params_solver(self):
+    def _get_params_solver(self) -> Dict:
+        '''
+        Get the neuron properties for the solver
+        '''
 
         neuron_specific_props = {
             'gamma': np.repeat(self.gamma, self.N),
@@ -150,7 +153,42 @@ class MNPool(Config):
 
         return neuron_specific_props
 
-    def run_sim(self, duration, syn_input, I_inj_soma=None, I_inj_den=None):
+    def run_sim(self,
+            duration: float, 
+            syn_input: Optional[TimedArray] = None,
+            I_inj_soma: Optional[TimedArray] = None,
+            I_inj_den: Optional[TimedArray] = None,
+            vars_to_monitor: Optional[List[str]] = None,
+            ) -> None:
+        
+        '''Run the simulation of the motor neuron pool.
+
+        Args:
+            duration (float): Duration of the simulation in seconds.
+            syn_input (Optional[TimedArray]): Optional synaptic input as a 
+                TimedArray with shape (samples, neurons).
+            I_inj_soma (Optional[TimedArray]): Optional injected current in 
+                the soma as a TimedArray with shape (samples).
+            I_inj_den (Optional[TimedArray]): Optional injected current in the 
+                dendrite as a TimedArray with shape (samples).
+            vars_to_monitor (Optional[List[str]]): Optional list of variables to 
+                monitor.
+
+        Returns:
+            None
+
+        Notes:
+            - This function runs a simulation of the motor neuron pool for the
+                specified duration.
+            - The synaptic input, injected currents, and variables to monitor
+                can be optionally provided but their samples dimension must match
+                the duration of the simulation.
+            - The simulation results are stored in the object for further analysis.
+                Spikes are stored in spikes_mon, the rest of the variables are stored
+                in state_mon.
+            - The outputs are sorted according to the neuron index, in ascending 
+                order based on the motor neuron size.
+        '''
 
         prefs.codegen.target = 'cython'
         start_scope()
@@ -301,10 +339,8 @@ class MNPool(Config):
 
         # Choose variables to record
         spike_mon = SpikeMonitor(mn_pool)
-        if syn_input is None:
-            vars_to_monitor = ['v_den', 'v_soma', 'I_pic', 'I_ion', 'I_na', 'I_kf', 'I_ks']
-        else:
-            vars_to_monitor = ['v_den', 'v_soma', 'I_syn', 'I_pic', 'I_ion', 'I_na', 'I_kf', 'I_ks']
+        if vars_to_monitor is None:
+            vars_to_monitor = ['v_soma']
         state_mon = StateMonitor(mn_pool, vars_to_monitor, record=True)
 
         # Run the simulation
@@ -320,10 +356,24 @@ class MNPool(Config):
 
         print('Simulation done!')
 
-    def get_spike_trains(self):
+    def get_spike_trains(self) -> Dict:
+        '''Get the spike trains of the motor neuron pool
+        Returns:
+            spike_trains (Dict): Dictionary with the spike trains of the motor 
+                neuron pool. Keys are the neuron index and values are the 
+                corresponding spike times.
+        '''
         return self.spike_mon.spike_trains()     
 
-    def _get_mu_force(self, spikes_bin = None):
+    def _get_mu_force(self, spikes_bin: Optional[np.ndarray] = None) -> None:
+        '''Compute the force of the motor neuron pool based on the spikes
+        Args:
+            spikes_bin (Optional[np.ndarray]): Optional input of binary spikes
+                with shape (neurons, samples). If None, the function will 
+                generate the binary spikes based on the spike monitor.
+        Returns:
+            None
+        '''
 
         if spikes_bin is None:
             spikes_bin = self._make_spikes_bin()
@@ -345,7 +395,13 @@ class MNPool(Config):
 
         self.force = force
         
-    def _make_spikes_bin(self):
+    def _make_spikes_bin(self) -> np.ndarray:
+        '''Transforms the spikes from the spike monitor into binary spikes
+        Returns:
+            spikes_bin (np.ndarray): Binary array with the spikes as 1s and 0s
+                as baselines with shape (neurons, samples).
+        '''
+
         firings = self.get_spike_trains()
         neurons = len(firings)
 
@@ -362,7 +418,11 @@ class MNPool(Config):
         
         return spikes_bin
 
-    def plot_results(self, curr_to_plot = None, curr_to_plot_label = None):
+    def plot_results(self, 
+            curr_to_plot: Optional[np.ndarray] = None, 
+            curr_to_plot_label: Optional[str] = None,
+            ) -> plt.Axes:
+        '''Plot the results of the motor neuron pool simulation.'''
 
         fig, axs = plt.subplots(3,1,figsize=(12,10), layout='constrained', sharex=True)
         axs = np.ravel(axs)

@@ -1,5 +1,5 @@
+from typing import Tuple, Optional
 import brian2.numpy_ as np
-rng = np.random.default_rng()
 from brian2 import *
 from scipy import signal
 from scipy.fft import fft, fftfreq
@@ -10,7 +10,15 @@ class SynInputs:
     the corresponding input current.
     '''
 
-    def __init__(self, ninputs, nneurons, duration, fs, mean_in, std_in):
+    def __init__(self, 
+        ninputs: int,
+        nneurons: int,
+        duration: float,
+        fs: int,
+        mean_in: float,
+        std_in: float,
+        ):
+
         # Basic props
         self.ninputs = ninputs
         self.nneurons = nneurons
@@ -33,7 +41,16 @@ class SynInputs:
 
         self._gen_all_inputs()
 
-    def _gen_all_inputs(self):
+    def _gen_all_inputs(self) -> None:
+        '''Generate all inputs including common inputs, common noise, and
+        independent noise.
+
+        This method generates the synaptic weights, common inputs, common
+        noise, and independent noise for the model. It then computes the 
+        power spectral density (PSD) of the inputs and scales the components 
+        based on the different bandwidths. Finally, it computes the final 
+        currents for each neuron based on the generated inputs.
+        '''
 
         # Generate synaptic weights
         self.syn_weights = self._gen_syn_weights(self.nneurons, self.ninputs)
@@ -68,14 +85,37 @@ class SynInputs:
 
         self.input_per_neuron = self.mean_in + (ci_term + cn_term + in_term) * self.std_in
 
-    def _gen_input(self, dim, duration, bw, fs):
+    def _gen_input(self, dim:int, duration: float, bw: float, fs: int) -> np.ndarray:
+        '''
+        Generate input signals with specified properties.
+
+        Parameters:
+            dim (int): The dimension of the input signals.
+            duration (float): The duration of the input signals in seconds.
+            bw (float): The cutoff frequency for the low-pass filter.
+            fs (int): The sampling rate of the input signals.
+
+        Returns:
+            np.ndarray: The generated input signals with shape (dim, samples),
+                where samples is calculated as duration * fs.
+        '''
         samples = int(duration * fs)
         inputs = np.random.normal(0, 1, (dim, samples))
         sos = signal.butter(2, bw, 'low', fs=fs, output='sos')
         inputs = signal.sosfilt(sos, inputs, axis=-1)
         return inputs
 
-    def _get_psd(self, data, fs):
+    def _get_psd(self, data: np.ndarray, fs: int) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Compute the Power Spectral Density (PSD) of the given data.
+        Parameters:
+            data (np.ndarray): The input data array with shape (dim, samples).
+            fs (int): The sampling frequency.
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: A tuple containing the PSD and the 
+                corresponding frequency values.
+        """
+
         samples = data.shape[1]
 
         # Compute PSD
@@ -85,9 +125,26 @@ class SynInputs:
 
         return psd, xf
 
-    def _gen_syn_weights(self, nneurons, ninputs):
-        # Distribution of weights across the neurons based on:
-        # A graph-based approach to identify motor neuron synergies, Avrillon et al. 2023
+    def _gen_syn_weights(self,
+        nneurons: int,
+        ninputs: int,
+        seed: Optional[int] = None
+        ) -> np.ndarray:
+        """
+        Generate synaptic weights for a given number of neurons and inputs
+        based on (Avrillon et al. 2023) - A graph-based approach to identify
+        motor neuron synergies.
+
+        Parameters:
+            nneurons (int): The number of neurons.
+            ninputs (int): The number of inputs.
+            seed (Optional[int]): The seed for the random number generator to
+                shuffle the weights. Defaults to None.
+        Returns:
+            np.ndarray: An array of synaptic weights.
+        Raises:
+            ValueError: If the number of inputs is not supported.
+        """
         
         if ninputs == 0:
             return np.zeros((nneurons, ninputs + 1))
@@ -135,5 +192,9 @@ class SynInputs:
             raise ValueError("Number of inputs not supported")
         
         # Permute the weight distribution across the neurons in the pool
+        if seed:
+            rng = np.random.default_rng(seed)
+        else:
+            rng = np.random.default_rng()
         rng.shuffle(weights, axis=0)
         return weights

@@ -24,7 +24,7 @@ class Config:
 
     pulse_width: float = 0.6 * ms # Width of the pulse used to model the channel dynamics
     g_na_area: float = 30 * msiemens / cm ** 2 # Sodium conductance per area
-    alpha_M: float = 22 / ms
+    alpha_M: float = 22 / ms 
     beta_M: float = 13 / ms
     alpha_P: float = 0.008 / ms 
 
