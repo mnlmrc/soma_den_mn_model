@@ -1,7 +1,7 @@
 # Soma-dendrite motor neuron model
 
 ## Overview 
-Two compartment motor neuron (MN) pool model based on (Elias and Kohn, 2013). Every MN is comprised by a cylindrical soma and dendrite. The dendrites of the MNs include L-type Ca2+ channels to simulate the effect of persistent inward currents. The output is coupled with a model of motor unit (MU) twitch for force production. The model support the injection of current in the soma or dendrite, plus synaptic excitatory inputs. The code is implemented in Brian2.  
+Two compartment motor neuron (MN) pool model based on ([Elias and Kohn, 2013](https://www.sciencedirect.com/science/article/abs/pii/S0925231212006078?casa_token=T01r_7fUvHcAAAAA:ZbQ1gO_hS-TRkqEL70NnAckEG-5ZO7FmE9zGRCobI_8ZWbo9Iak_m2XaJK45fI0tbjg5lQVe)). Every MN is comprised by a cylindrical soma and dendrite. The dendrites of the MNs include L-type Ca2+ channels to simulate the effect of persistent inward currents. The output is coupled with a model of motor unit (MU) twitch for force production. The model support the injection of current in the soma or dendrite, plus synaptic excitatory inputs (generated based on [Avrillon et al, 2023](https://www.biorxiv.org/content/10.1101/2023.02.07.527433v1.abstract) and [Farina and Negro, 2015](https://journals.lww.com/acsm-essr/fulltext/2015/01000/Common_Synaptic_Input_to_Motor_Neurons,_Motor_Unit.6.aspx?casa_token=szN6TxNwHvUAAAAA:8S2rH0ZZkY0TrmBzmT2U4Bl3LAfpbBh-NPKPgMZxUIaQVPJi1RvWoUCEL3-Dcusb26mXQGcNU5tL2jMKcpQ3CxL9oA&casa_token=2VxzWnIaghYAAAAA:JMTlCRwgQ6ZDoTdhkBJvZ722bskOXZpnmpXBAWY6tWq0PmO9731auCVmkBHdtd2lAQxY_pdheSK3jxHsW-DuGj4NLA)). The code is implemented in Brian2.  
 
 ## Table of Contents
 - [Installation](#installation)
