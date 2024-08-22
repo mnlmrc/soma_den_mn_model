@@ -41,8 +41,8 @@ class MNPool(Config):
         self.g_leak_soma = 2 * np.pi * self.r_soma * self.l_soma / self.R_soma 
         self.g_leak_den = 2 * np.pi * self.r_den * self.l_den / self.R_den 
 
-        # Rheobase current and input resistance
-        self.I_rheo = np.linspace(*self.I_rheo_range, N)
+        # Rheobase current (with 1% coefficient of variation) and input resistance
+        self.I_rheo = np.linspace(*self.I_rheo_range, N) + np.random.normal(0, np.diff(self.I_rheo_range)/100, N) * nA
         self.R_n = 1 / (self.g_leak_soma + (self.g_leak_den * self.g_coupling) / (self.g_leak_den + self.g_coupling)) 
 
         # Force properties
@@ -69,7 +69,7 @@ class MNPool(Config):
         self.C_den = 2 * np.pi * self.r_den * self.l_den * self.C_mem
         
         self.v_thr = self.R_n * self.I_rheo
-        self.v_thr_ca = np.linspace(*self.v_thr_ca_range, self.N)
+        self.v_thr_ca = np.linspace(*self.v_thr_ca_range, self.N) + np.random.normal(0, np.diff(self.v_thr_ca_range)/100, N) * mV
         
         self.alpha_H = np.linspace(*self.alpha_H_range, self.N)
         self.beta_H = np.linspace(*self.beta_H_range, self.N)
