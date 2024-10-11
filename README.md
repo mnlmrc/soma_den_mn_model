@@ -61,7 +61,7 @@ The package is composed of the following modules:
 - `inputs.py`: Class to generate synaptic excitatory inputs (dynamics of the excitatory neurotransmitter, unitless).
 - `pool.py`: Class with functions to simulate a motor neuron pool.
 
-The `notebook` folder contains examples of how to use the package, including:
+The `tutorials` folder contains examples of how to use the package, including:
 - `example_injected_dendrite.ipynb`: Dendrite current injection to a 100 MN pool
 - `example_injected_soma.ipynb`: Soma current injection to a 100 MN pool
 - `example_synaptic_dendrite.ipynb`: Synaptic excitatory inputs (dendrite compartment) to a 100 MN pool
