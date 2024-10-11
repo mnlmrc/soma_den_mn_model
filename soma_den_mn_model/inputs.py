@@ -121,7 +121,7 @@ class SynInputs:
         # Compute PSD
         yf = fft(data, axis=1)
         xf = fftfreq(samples, 1/fs)[:samples//2]
-        psd = psd = 2/samples * np.abs(yf[:, :samples//2])
+        psd = 2/samples * np.abs(yf[:, :samples//2])
 
         return psd, xf
 
